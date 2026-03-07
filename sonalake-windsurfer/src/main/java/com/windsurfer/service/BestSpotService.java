@@ -35,7 +35,7 @@ public class BestSpotService {
         List<LocationForecast> scored = locations.stream()
                 .map(loc -> fetchAndScore(loc, date))
                 .flatMap(Optional::stream)
-                .filter(forecast -> forecast.windsurfScore() > WindsurfScoringEvaluation.NOT_SUITABLE_ATA_ALL_SCORE)
+                .filter(forecast -> forecast.windsurfScore() > WindsurfScoringEvaluation.NOT_SUITABLE_AT_ALL_SCORE)
                 .sorted(Comparator.comparingDouble(LocationForecast::windsurfScore).reversed())
                 .toList();
         //todo co zrobić przy remisie?
@@ -47,7 +47,7 @@ public class BestSpotService {
 
     private void validateDateRange(LocalDate date) {
         LocalDate today = LocalDate.now();
-        LocalDate maxDate = today.plusDays(props.getForecastDays()-1);
+        LocalDate maxDate = today.plusDays(props.forecastDays()-1);
         if (date.isBefore(today) || date.isAfter(maxDate)) {
             throw new IllegalArgumentException(
                     "Date must be between " + today + " and " + maxDate +

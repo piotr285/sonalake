@@ -3,7 +3,7 @@ package com.windsurfer.util;
 import com.windsurfer.model.WeatherConditions;
 
 public class WindsurfScoringEvaluation {
-    public static final int NOT_SUITABLE_ATA_ALL_SCORE = 0;
+    public static final int NOT_SUITABLE_AT_ALL_SCORE = 0;
     private static final double WIND_MIN = 5.0;
     private static final double WIND_MAX = 18.0;
     private static final double TEMP_MIN = 15.0;
@@ -18,7 +18,7 @@ public class WindsurfScoringEvaluation {
         if (suitableConditions(conditions.windSpeedMs(), conditions.avgTempCelsius())) {
             return conditions.windSpeedMs() * WIND_MULTIPLIER + conditions.avgTempCelsius();
         }
-        return NOT_SUITABLE_ATA_ALL_SCORE;
+        return NOT_SUITABLE_AT_ALL_SCORE;
     }
 
     private static boolean suitableConditions(double windSpeed, double temperature) {
