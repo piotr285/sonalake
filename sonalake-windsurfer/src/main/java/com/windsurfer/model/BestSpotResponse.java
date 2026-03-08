@@ -15,8 +15,8 @@ public record BestSpotResponse(@JsonFormat(shape = JsonFormat.Shape.STRING, patt
     public record BestLocation(String name, String country, double score, WeatherConditions weather) {
         public static BestSpotResponse.BestLocation toBestLocation(LocationForecast lf) {
             return new BestSpotResponse.BestLocation(
-                    lf.location().name(),
-                    lf.location().country(),
+                    lf.location().getName(),
+                    lf.location().getCountry(),
                     lf.windsurfScore(),
                     lf.weather()
             );

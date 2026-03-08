@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -19,8 +20,38 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {
+                "windsurfing.locations[0].id=jastarnia",
+                "windsurfing.locations[0].name=Jastarnia",
+                "windsurfing.locations[0].country=Poland",
+                "windsurfing.locations[0].latitude=54.6961",
+                "windsurfing.locations[0].longitude=18.6786",
+                "windsurfing.locations[1].id=bridgetown",
+                "windsurfing.locations[1].name=Bridgetown",
+                "windsurfing.locations[1].country=Barbados",
+                "windsurfing.locations[1].latitude=13.0975",
+                "windsurfing.locations[1].longitude=-59.6167",
+                "windsurfing.locations[2].id=fortaleza",
+                "windsurfing.locations[2].name=Fortaleza",
+                "windsurfing.locations[2].country=Brazil",
+                "windsurfing.locations[2].latitude=-3.7172",
+                "windsurfing.locations[2].longitude=-38.5433",
+                "windsurfing.locations[3].id=pissouri",
+                "windsurfing.locations[3].name=Pissouri",
+                "windsurfing.locations[3].country=Cyprus",
+                "windsurfing.locations[3].latitude=34.6693",
+                "windsurfing.locations[3].longitude=32.7007",
+                "windsurfing.locations[4].id=le_morne",
+                "windsurfing.locations[4].name=Le Morne",
+                "windsurfing.locations[4].country=Mauritius",
+                "windsurfing.locations[4].latitude=-20.4500",
+                "windsurfing.locations[4].longitude=57.3167"
+        }
+)
 @AutoConfigureMockMvc
+@TestPropertySource(locations = "classpath:application.yml")
 class WindsurferControllerIntegrationTest {
     private static WireMockServer wireMock;
 
@@ -76,7 +107,7 @@ class WindsurferControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/best-spot returns 200 with best_location and all_locations")
+    @DisplayName("GET /api/best-spot returns 200 with best_location")
     void bestSpotReturns200() throws Exception {
         String date = tomorrow();
         stubAllLocationsWithDate(date, 12.0, 25.0);
@@ -88,22 +119,7 @@ class WindsurferControllerIntegrationTest {
                 .andExpect(jsonPath("$.best_location.country").isString())
                 .andExpect(jsonPath("$.best_location.score").isNumber())
                 .andExpect(jsonPath("$.best_location.weather.avgTempCelsius").value(25.0))
-                .andExpect(jsonPath("$.best_location.weather.windSpeedMs").value(12.0))
-                .andExpect(jsonPath("$.all_suitable_locations", hasSize(5)));
-    }
-
-    @Test
-    @DisplayName("GET /api/best-spot — all_suitable_locations are sorted descending by score")
-    void allLocationsSortedByScore() throws Exception {
-        String date = tomorrow();
-        stubAllLocationsWithDate(date, 10.0, 25.0);
-
-        mockMvc.perform(get("/api/best-spot").param("date", date))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.all_suitable_locations[0].score")
-                        .value(greaterThanOrEqualTo(
-                                // second element score — checked via index 1
-                                0.0)));
+                .andExpect(jsonPath("$.best_location.weather.windSpeedMs").value(12.0));
     }
 
     @Test
@@ -137,7 +153,7 @@ class WindsurferControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/best-spot returns 404 when no forecast data for date")
+    @DisplayName("GET /api/best-spot returns 200 when no forecast data for date -> no best location available")
     void noForecastDataReturns404() throws Exception {
         // Stub returns a different date than the one we request
         String differentDate = LocalDate.now().plusDays(10).toString();
@@ -145,7 +161,7 @@ class WindsurferControllerIntegrationTest {
 
         String requestDate = tomorrow();
         mockMvc.perform(get("/api/best-spot").param("date", requestDate))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 
     @Test

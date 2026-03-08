@@ -29,27 +29,27 @@ public class WeatherbitClient {
         this.props = props;
     }
 
-    @Cacheable(value = "forecasts", key = "#location.id()")
+    @Cacheable(value = "forecasts", key = "#location.id")
     public List<WeatherbitResponse.DayForecast> fetchDailyForecast(Location location) {
         String url = UriComponentsBuilder
                 .fromUriString(props.getBaseUrl() + "/forecast/daily")
-                .queryParam("lat", location.latitude())
-                .queryParam("lon", location.longitude())
+                .queryParam("lat", location.getLatitude())
+                .queryParam("lon", location.getLongitude())
                 .queryParam("key", props.getKey())
                 .queryParam("days", props.getForecastDays())
                 .queryParam("units", "M")   // metric: m/s, °C
                 .toUriString();
-        log.info("Fetching forecast for {} ({}, {})", location.name(), location.latitude(), location.longitude());
+        log.info("Fetching forecast for {} ({}, {})", location.getName(), location.getLatitude(), location.getLongitude());
         try {
             var response = restTemplate.getForObject(url, WeatherbitResponse.ForecastResponse.class);
             if (response == null || response.data() == null) {
-                throw new WeatherServiceException("Empty response from Weatherbit for location: " + location.name());
+                throw new WeatherServiceException("Empty response from Weatherbit for location: " + location.getName());
             }
             return response.data();
         } catch (HttpClientErrorException.Forbidden e) {
             throw new WeatherServiceException("Invalid Weatherbit API key", e);
         } catch (RestClientException e) {
-            throw new WeatherServiceException("Failed to fetch forecast for " + location.name() + ": " + e.getMessage(), e);
+            throw new WeatherServiceException("Failed to fetch forecast for " + location.getName() + ": " + e.getMessage(), e);
         }
     }
 

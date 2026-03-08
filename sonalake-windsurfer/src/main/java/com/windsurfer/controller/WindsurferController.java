@@ -1,5 +1,6 @@
 package com.windsurfer.controller;
 
+import com.windsurfer.config.LocationsConfig;
 import com.windsurfer.model.BestSpotResponse;
 import com.windsurfer.model.Location;
 import com.windsurfer.service.BestSpotService;
@@ -23,9 +24,9 @@ public class WindsurferController {
     private final BestSpotService bestSpotService;
     private final List<Location> locations;
 
-    public WindsurferController(BestSpotService bestSpotService, List<Location> locations) {
+    public WindsurferController(BestSpotService bestSpotService, LocationsConfig locationsConfig) {
         this.bestSpotService = bestSpotService;
-        this.locations = locations;
+        this.locations = locationsConfig.getLocations();
     }
 
     @GetMapping("/best-spot")

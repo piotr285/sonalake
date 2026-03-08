@@ -24,16 +24,11 @@ public class BestSpotService {
     private final WeatherbitClient weatherbitClient;
     private final WeatherbitProperties props;
 
-    public BestSpotService(List<Location> locations, WeatherbitClient weatherbitClient, WeatherbitProperties props) {
-        this.locations = locations;
+    public BestSpotService(LocationsConfig locationsConfig, WeatherbitClient weatherbitClient, WeatherbitProperties props) {
+        this.locations = locationsConfig.getLocations();
         this.weatherbitClient = weatherbitClient;
         this.props = props;
     }
-//    public BestSpotService(LocationsConfig locationsConfig, WeatherbitClient weatherbitClient, WeatherbitProperties props) {
-//        this.locations = locationsConfig.locations();
-//        this.weatherbitClient = weatherbitClient;
-//        this.props = props;
-//    }
 
     public BestSpotResponse findBestSpot(LocalDate date) {
         validateDateRange(date);
@@ -43,14 +38,14 @@ public class BestSpotService {
                 .flatMap(Optional::stream)
                 .filter(forecast -> forecast.windsurfScore() > WindsurfScoringEvaluation.NOT_SUITABLE_AT_ALL_SCORE)
                 .sorted(Comparator.comparingDouble(LocationForecast::windsurfScore)
-                        .reversed().thenComparing(lf -> lf.location().name()))
+                        .reversed().thenComparing(lf -> lf.location().getName()))
                 .toList();
         Optional<LocationForecast> best = scored.stream().findFirst();
         if (best.isEmpty()) {
             log.info("No suitable windsurfing spot found for {}", date);
             return BestSpotResponse.noSpotsFound(date);
         }
-        log.info("Best spot for {}: {} (score={})", date, best.get().location().name(), best.get().windsurfScore());
+        log.info("Best spot for {}: {} (score={})", date, best.get().location().getName(), best.get().windsurfScore());
         return new BestSpotResponse(date, BestSpotResponse.BestLocation.toBestLocation(best.get()));
     }
 
@@ -71,7 +66,7 @@ public class BestSpotService {
                     .map(weather -> new LocationForecast(loc, weather,
                             WindsurfScoringEvaluation.round(WindsurfScoringEvaluation.optimalConditionsScore(weather))));
         } catch (Exception ex) {
-            log.warn("Could not fetch forecast for {}: {}", loc.name(), ex.getMessage());
+            log.warn("Could not fetch forecast for {}: {}", loc.getName(), ex.getMessage());
             return Optional.empty();
         }
     }
