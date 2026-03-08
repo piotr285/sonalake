@@ -7,6 +7,7 @@ import com.windsurfer.config.WeatherbitProperties;
 import com.windsurfer.model.BestSpotResponse;
 import com.windsurfer.model.Location;
 import com.windsurfer.model.LocationForecast;
+import com.windsurfer.model.WeatherConditions;
 import com.windsurfer.util.WindsurfScoringEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,12 +63,22 @@ public class BestSpotService {
     private Optional<LocationForecast> fetchAndScore(Location loc, LocalDate date) {
         try {
             List<WeatherbitResponse.DayForecast> forecasts = weatherbitClient.fetchDailyForecast(loc);
-            return weatherbitClient.extractDay(forecasts, date)
+            return extractDay(forecasts, date)
                     .map(weather -> new LocationForecast(loc, weather,
                             WindsurfScoringEvaluation.round(WindsurfScoringEvaluation.optimalConditionsScore(weather))));
         } catch (Exception ex) {
             log.warn("Could not fetch forecast for {}: {}", loc.getName(), ex.getMessage());
             return Optional.empty();
         }
+    }
+
+    private Optional<WeatherConditions> extractDay(List<WeatherbitResponse.DayForecast> forecasts, LocalDate date) {
+        String target = date.toString(); // "YYYY-MM-DD"
+        return forecasts.stream()
+                .filter(d -> target.equals(d.datetime()))
+                .findFirst()
+                .map(d -> new WeatherConditions(
+                        WindsurfScoringEvaluation.round(d.temp()),
+                        WindsurfScoringEvaluation.round(d.windSpd())));
     }
 }

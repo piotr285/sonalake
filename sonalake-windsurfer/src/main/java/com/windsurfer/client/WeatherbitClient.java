@@ -3,8 +3,6 @@ package com.windsurfer.client;
 import com.windsurfer.config.WeatherbitProperties;
 import com.windsurfer.exception.WeatherServiceException;
 import com.windsurfer.model.Location;
-import com.windsurfer.model.WeatherConditions;
-import com.windsurfer.util.WindsurfScoringEvaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
@@ -14,9 +12,8 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.LocalDate;
+import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class WeatherbitClient {
@@ -31,13 +28,14 @@ public class WeatherbitClient {
 
     @Cacheable(value = "forecasts", key = "#location.id")
     public List<WeatherbitResponse.DayForecast> fetchDailyForecast(Location location) {
-        String url = UriComponentsBuilder
-                .fromUriString(props.getBaseUrl() + "/forecast/daily")
+        String url = UriComponentsBuilder.newInstance()
+                .uri(URI.create(props.getBaseUrl()))
+                .path("/forecast/daily")
                 .queryParam("lat", location.getLatitude())
                 .queryParam("lon", location.getLongitude())
                 .queryParam("key", props.getKey())
                 .queryParam("days", props.getForecastDays())
-                .queryParam("units", "M")   // metric: m/s, °C
+                .queryParam("units", "M")
                 .toUriString();
         log.info("Fetching forecast for {} ({}, {})", location.getName(), location.getLatitude(), location.getLongitude());
         try {
@@ -51,15 +49,5 @@ public class WeatherbitClient {
         } catch (RestClientException e) {
             throw new WeatherServiceException("Failed to fetch forecast for " + location.getName() + ": " + e.getMessage(), e);
         }
-    }
-
-    public Optional<WeatherConditions> extractDay(List<WeatherbitResponse.DayForecast> forecasts, LocalDate date) {
-        String target = date.toString(); // "YYYY-MM-DD"
-        return forecasts.stream()
-                .filter(d -> target.equals(d.datetime()))
-                .findFirst()
-                .map(d -> new WeatherConditions(
-                        WindsurfScoringEvaluation.round(d.temp()),
-                        WindsurfScoringEvaluation.round(d.windSpd())));
     }
 }

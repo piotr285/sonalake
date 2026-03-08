@@ -14,42 +14,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {
-                "windsurfing.locations[0].id=jastarnia",
-                "windsurfing.locations[0].name=Jastarnia",
-                "windsurfing.locations[0].country=Poland",
-                "windsurfing.locations[0].latitude=54.6961",
-                "windsurfing.locations[0].longitude=18.6786",
-                "windsurfing.locations[1].id=bridgetown",
-                "windsurfing.locations[1].name=Bridgetown",
-                "windsurfing.locations[1].country=Barbados",
-                "windsurfing.locations[1].latitude=13.0975",
-                "windsurfing.locations[1].longitude=-59.6167",
-                "windsurfing.locations[2].id=fortaleza",
-                "windsurfing.locations[2].name=Fortaleza",
-                "windsurfing.locations[2].country=Brazil",
-                "windsurfing.locations[2].latitude=-3.7172",
-                "windsurfing.locations[2].longitude=-38.5433",
-                "windsurfing.locations[3].id=pissouri",
-                "windsurfing.locations[3].name=Pissouri",
-                "windsurfing.locations[3].country=Cyprus",
-                "windsurfing.locations[3].latitude=34.6693",
-                "windsurfing.locations[3].longitude=32.7007",
-                "windsurfing.locations[4].id=le_morne",
-                "windsurfing.locations[4].name=Le Morne",
-                "windsurfing.locations[4].country=Mauritius",
-                "windsurfing.locations[4].latitude=-20.4500",
-                "windsurfing.locations[4].longitude=57.3167"
-        }
-)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestPropertySource(locations = "classpath:application.yml")
 class WindsurferControllerIntegrationTest {
@@ -77,7 +50,6 @@ class WindsurferControllerIntegrationTest {
     @DynamicPropertySource
     static void overrideWeatherbitUrl(DynamicPropertyRegistry registry) {
         registry.add("weatherbit.api.base-url", () -> wireMock.baseUrl());
-        registry.add("weatherbit.api.key",      () -> "test-key");
     }
 
     private String tomorrow() {
@@ -172,7 +144,7 @@ class WindsurferControllerIntegrationTest {
                 .andExpect(jsonPath("$.locations", hasSize(5)))
                 .andExpect(jsonPath("$.locations[*].name",
                         containsInAnyOrder("Jastarnia", "Bridgetown", "Fortaleza",
-                                           "Pissouri", "Le Morne")));
+                                "Pissouri", "Le Morne")));
     }
 
     @Test
