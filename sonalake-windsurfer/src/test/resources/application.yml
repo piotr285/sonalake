@@ -1,0 +1,7 @@
+weatherbit:
+  api:
+    key: test-key
+
+spring:
+  cache:
+    type: none

@@ -24,16 +24,16 @@ public class BestSpotService {
     private final WeatherbitClient weatherbitClient;
     private final WeatherbitProperties props;
 
-//    public BestSpotService(List<Location> locations, WeatherbitClient weatherbitClient, WeatherbitProperties props) {
-//        this.locations = locations;
-//        this.weatherbitClient = weatherbitClient;
-//        this.props = props;
-//    }
-    public BestSpotService(LocationsConfig locationsConfig, WeatherbitClient weatherbitClient, WeatherbitProperties props) {
-        this.locations = locationsConfig.locations();
+    public BestSpotService(List<Location> locations, WeatherbitClient weatherbitClient, WeatherbitProperties props) {
+        this.locations = locations;
         this.weatherbitClient = weatherbitClient;
         this.props = props;
     }
+//    public BestSpotService(LocationsConfig locationsConfig, WeatherbitClient weatherbitClient, WeatherbitProperties props) {
+//        this.locations = locationsConfig.locations();
+//        this.weatherbitClient = weatherbitClient;
+//        this.props = props;
+//    }
 
     public BestSpotResponse findBestSpot(LocalDate date) {
         validateDateRange(date);

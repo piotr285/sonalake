@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+weatherbit:
+  api:
+    base-url: https://api.weatherbit.io/v2.0
+    key: ${WEATHERBIT_API_KEY:YOUR_API_KEY_HERE}
+    forecast-days: 7
+    connect-timeout-ms: 5000
+    read-timeout-ms: 10000
+
+spring:
+  cache:
+    cache-names: forecasts
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=3600s
+
+windsurfing:
+  locations:
+    - id: jastarnia
+      name: Jastarnia
+      country: Poland
+      latitude: 54.6961
+      longitude: 18.6786
+    - id: bridgetown
+      name: Bridgetown
+      country: Barbados
+      latitude: 13.0975
+      longitude: -59.6167
+    - id: fortaleza
+      name: Fortaleza
+      country: Brazil
+      latitude: -3.7172
+      longitude: -38.5433
+    - id: pissouri
+      name: Pissouri
+      country: Cyprus
+      latitude: 34.6693
+      longitude: 32.7007
+    - id: le_morne
+      name: Le Morne
+      country: Mauritius
+      latitude: -20.4500
+      longitude: 57.3167
+
+logging:
+  level:
+    com.windsurfer: INFO
