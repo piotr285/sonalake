@@ -12,8 +12,8 @@ public class RestClientConfig {
     @Bean
     public RestTemplate restTemplate(WeatherbitProperties props, RestTemplateBuilder builder) {
         return builder
-                .setConnectTimeout(Duration.ofMillis(props.connectTimeoutMs()))
-                .setReadTimeout(Duration.ofMillis(props.readTimeoutMs()))
+                .setConnectTimeout(Duration.ofMillis(props.getConnectTimeoutMs()))
+                .setReadTimeout(Duration.ofMillis(props.getReadTimeoutMs()))
                 .build();
     }
 }

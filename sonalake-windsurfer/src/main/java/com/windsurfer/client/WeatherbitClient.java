@@ -32,18 +32,16 @@ public class WeatherbitClient {
     @Cacheable(value = "forecasts", key = "#location.id()")
     public List<WeatherbitResponse.DayForecast> fetchDailyForecast(Location location) {
         String url = UriComponentsBuilder
-                .fromUriString(props.baseUrl() + "/forecast/daily")
+                .fromUriString(props.getBaseUrl() + "/forecast/daily")
                 .queryParam("lat", location.latitude())
                 .queryParam("lon", location.longitude())
-                .queryParam("key", props.key())
-                .queryParam("days", props.forecastDays())
+                .queryParam("key", props.getKey())
+                .queryParam("days", props.getForecastDays())
                 .queryParam("units", "M")   // metric: m/s, °C
                 .toUriString();
-        log.info("Fetching forecast for {} ({}, {})",
-                location.name(), location.latitude(), location.longitude());
+        log.info("Fetching forecast for {} ({}, {})", location.name(), location.latitude(), location.longitude());
         try {
             var response = restTemplate.getForObject(url, WeatherbitResponse.ForecastResponse.class);
-            //todo wysłać jakąś informację, gdy nie mozna pobrac danych
             if (response == null || response.data() == null) {
                 throw new WeatherServiceException("Empty response from Weatherbit for location: " + location.name());
             }

@@ -2,6 +2,7 @@ package com.windsurfer.service;
 
 import com.windsurfer.client.WeatherbitClient;
 import com.windsurfer.client.WeatherbitResponse;
+import com.windsurfer.config.LocationsConfig;
 import com.windsurfer.config.WeatherbitProperties;
 import com.windsurfer.model.BestSpotResponse;
 import com.windsurfer.model.Location;
@@ -23,8 +24,13 @@ public class BestSpotService {
     private final WeatherbitClient weatherbitClient;
     private final WeatherbitProperties props;
 
-    public BestSpotService(List<Location> locations, WeatherbitClient weatherbitClient,  WeatherbitProperties props) {
-        this.locations = locations;
+//    public BestSpotService(List<Location> locations, WeatherbitClient weatherbitClient, WeatherbitProperties props) {
+//        this.locations = locations;
+//        this.weatherbitClient = weatherbitClient;
+//        this.props = props;
+//    }
+    public BestSpotService(LocationsConfig locationsConfig, WeatherbitClient weatherbitClient, WeatherbitProperties props) {
+        this.locations = locationsConfig.locations();
         this.weatherbitClient = weatherbitClient;
         this.props = props;
     }
@@ -36,18 +42,21 @@ public class BestSpotService {
                 .map(loc -> fetchAndScore(loc, date))
                 .flatMap(Optional::stream)
                 .filter(forecast -> forecast.windsurfScore() > WindsurfScoringEvaluation.NOT_SUITABLE_AT_ALL_SCORE)
-                .sorted(Comparator.comparingDouble(LocationForecast::windsurfScore).reversed())
+                .sorted(Comparator.comparingDouble(LocationForecast::windsurfScore)
+                        .reversed().thenComparing(lf -> lf.location().name()))
                 .toList();
-        //todo co zrobić przy remisie?
-        LocationForecast best = scored.getFirst();
-        log.info("Best spot for {}: {} (score={})", date, best.location().name(), best.windsurfScore());
-        return new BestSpotResponse(date, BestSpotResponse.BestLocation.toBestLocation(best),
-                scored.stream().map(blf -> BestSpotResponse.LocationResult.toLocationResult(blf)).toList());
+        Optional<LocationForecast> best = scored.stream().findFirst();
+        if (best.isEmpty()) {
+            log.info("No suitable windsurfing spot found for {}", date);
+            return BestSpotResponse.noSpotsFound(date);
+        }
+        log.info("Best spot for {}: {} (score={})", date, best.get().location().name(), best.get().windsurfScore());
+        return new BestSpotResponse(date, BestSpotResponse.BestLocation.toBestLocation(best.get()));
     }
 
     private void validateDateRange(LocalDate date) {
         LocalDate today = LocalDate.now();
-        LocalDate maxDate = today.plusDays(props.forecastDays()-1);
+        LocalDate maxDate = today.plusDays(props.getForecastDays() - 1);
         if (date.isBefore(today) || date.isAfter(maxDate)) {
             throw new IllegalArgumentException(
                     "Date must be between " + today + " and " + maxDate +
