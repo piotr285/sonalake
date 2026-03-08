@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "weatherbit.api")
 public class WeatherbitProperties {
-    private String baseUrl = "https://api.weatherbit.io/v2.0";
+    private String baseUrl;
     private String key;
-    private int forecastDays = 7;
-    private int connectTimeoutMs = 5000;
-    private int readTimeoutMs = 10000;
+    private int forecastDays;
+    private int connectTimeoutMs;
+    private int readTimeoutMs;
 }
